@@ -48,6 +48,18 @@ pub struct AppSettings {
 
     #[serde(default = "default_bg_size")]
     pub background_size: String,
+
+    // 亚克力/毛玻璃效果 (Windows 专属，默认关闭)
+    #[serde(default)]
+    pub acrylic_enabled: bool,
+
+    // 主题: "auto"、"light" 或 "dark"，默认 "auto" (跟随系统)
+    #[serde(default = "default_theme")]
+    pub theme: String,
+
+    // 文本大小: 12-24，默认 14
+    #[serde(default = "default_font_size")]
+    pub font_size: u32,
 }
 
 fn default_true() -> bool { true }
@@ -60,6 +72,8 @@ fn default_bg_opacity() -> f32 { 0.3 }
 fn default_bg_blur() -> u32 { 0 }
 fn default_bg_brightness() -> f32 { 1.0 }
 fn default_bg_size() -> String { "cover".to_string() }
+fn default_theme() -> String { "auto".to_string() }
+fn default_font_size() -> u32 { 14 }
 
 impl Default for AppSettings {
     fn default() -> Self {
@@ -79,6 +93,9 @@ impl Default for AppSettings {
             background_blur: 0,
             background_brightness: 1.0,
             background_size: "cover".to_string(),
+            acrylic_enabled: false,
+            theme: "auto".to_string(),
+            font_size: 14,
         }
     }
 }

@@ -6,7 +6,7 @@ import SLInput from "../components/common/SLInput.vue";
 import SLSwitch from "../components/common/SLSwitch.vue";
 import SLModal from "../components/common/SLModal.vue";
 import SLSelect from "../components/common/SLSelect.vue";
-import { settingsApi, type AppSettings } from "../api/settings";
+import { settingsApi, checkAcrylicSupport, applyAcrylic, type AppSettings } from "../api/settings";
 import { systemApi } from "../api/system";
 import { convertFileSrc } from "@tauri-apps/api/core";
 
@@ -17,6 +17,9 @@ const error = ref<string | null>(null);
 const success = ref<string | null>(null);
 const hasChanges = ref(false);
 
+// 亚克力支持检测
+const acrylicSupported = ref(true);
+
 // String versions for number inputs (avoids v-model type mismatch)
 const maxMem = ref("2048");
 const minMem = ref("512");
@@ -26,12 +29,19 @@ const logLines = ref("5000");
 const bgOpacity = ref("0.3");
 const bgBlur = ref("0");
 const bgBrightness = ref("1.0");
+const uiFontSize = ref("14");
 
 const backgroundSizeOptions = [
   { label: "覆盖 (Cover)", value: "cover" },
   { label: "包含 (Contain)", value: "contain" },
   { label: "拉伸 (Fill)", value: "fill" },
   { label: "原始大小 (Auto)", value: "auto" },
+];
+
+const themeOptions = [
+  { label: "跟随系统", value: "auto" },
+  { label: "浅色", value: "light" },
+  { label: "深色", value: "dark" },
 ];
 
 const showImportModal = ref(false);
@@ -45,6 +55,12 @@ const backgroundPreviewUrl = computed(() => {
 
 onMounted(async () => {
   await loadSettings();
+  // 检测亚克力支持
+  try {
+    acrylicSupported.value = await checkAcrylicSupport();
+  } catch {
+    acrylicSupported.value = false;
+  }
 });
 
 async function loadSettings() {
@@ -61,7 +77,11 @@ async function loadSettings() {
     bgOpacity.value = String(s.background_opacity);
     bgBlur.value = String(s.background_blur);
     bgBrightness.value = String(s.background_brightness);
+    uiFontSize.value = String(s.font_size);
     hasChanges.value = false;
+    // 应用已保存的设置
+    applyTheme(s.theme);
+    applyFontSize(s.font_size);
   } catch (e) {
     error.value = String(e);
   } finally {
@@ -73,10 +93,63 @@ function markChanged() {
   hasChanges.value = true;
 }
 
+function getEffectiveTheme(theme: string): "light" | "dark" {
+  if (theme === "auto") {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return theme as "light" | "dark";
+}
+
+function applyTheme(theme: string) {
+  const effectiveTheme = getEffectiveTheme(theme);
+  document.documentElement.setAttribute('data-theme', effectiveTheme);
+  return effectiveTheme;
+}
+
+function applyFontSize(size: number) {
+  document.documentElement.style.fontSize = `${size}px`;
+}
+
+function handleFontSizeChange() {
+  markChanged();
+  const size = parseInt(uiFontSize.value) || 14;
+  applyFontSize(size);
+}
+
+async function handleAcrylicChange(enabled: boolean) {
+  markChanged();
+  document.documentElement.setAttribute("data-acrylic", enabled ? "true" : "false");
+  
+  if (!acrylicSupported.value) {
+    return;
+  }
+  
+  try {
+    const theme = settings.value?.theme || "auto";
+    const isDark = getEffectiveTheme(theme) === "dark";
+    await applyAcrylic(enabled, isDark);
+  } catch (e) {
+    error.value = String(e);
+  }
+}
+
+async function handleThemeChange() {
+  markChanged();
+  if (!settings.value) return;
+  
+  const effectiveTheme = applyTheme(settings.value.theme);
+  
+  if (settings.value.acrylic_enabled && acrylicSupported.value) {
+    try {
+      const isDark = effectiveTheme === "dark";
+      await applyAcrylic(true, isDark);
+    } catch {}
+  }
+}
+
 async function saveSettings() {
   if (!settings.value) return;
 
-  // Sync string inputs back to settings object
   settings.value.default_max_memory = parseInt(maxMem.value) || 2048;
   settings.value.default_min_memory = parseInt(minMem.value) || 512;
   settings.value.default_port = parseInt(port.value) || 25565;
@@ -85,6 +158,7 @@ async function saveSettings() {
   settings.value.background_opacity = parseFloat(bgOpacity.value) || 0.3;
   settings.value.background_blur = parseInt(bgBlur.value) || 0;
   settings.value.background_brightness = parseFloat(bgBrightness.value) || 1.0;
+  settings.value.font_size = parseInt(uiFontSize.value) || 14;
 
   saving.value = true;
   error.value = null;
@@ -94,7 +168,16 @@ async function saveSettings() {
     hasChanges.value = false;
     setTimeout(() => (success.value = null), 3000);
 
-    // 通知AppLayout重新加载背景
+    applyTheme(settings.value.theme);
+    applyFontSize(settings.value.font_size);
+
+    if (acrylicSupported.value) {
+      try {
+        const isDark = getEffectiveTheme(settings.value.theme) === "dark";
+        await applyAcrylic(settings.value.acrylic_enabled, isDark);
+      } catch {}
+    }
+
     window.dispatchEvent(new CustomEvent('settings-updated'));
   } catch (e) {
     error.value = String(e);
@@ -115,10 +198,13 @@ async function resetSettings() {
     bgOpacity.value = String(s.background_opacity);
     bgBlur.value = String(s.background_blur);
     bgBrightness.value = String(s.background_brightness);
+    uiFontSize.value = String(s.font_size);
     showResetConfirm.value = false;
     hasChanges.value = false;
     success.value = "已恢复默认设置";
     setTimeout(() => (success.value = null), 3000);
+    applyTheme(s.theme);
+    applyFontSize(s.font_size);
   } catch (e) {
     error.value = String(e);
   }
@@ -148,11 +234,14 @@ async function handleImport() {
     bgOpacity.value = String(s.background_opacity);
     bgBlur.value = String(s.background_blur);
     bgBrightness.value = String(s.background_brightness);
+    uiFontSize.value = String(s.font_size);
     showImportModal.value = false;
     importJson.value = "";
     hasChanges.value = false;
     success.value = "设置已导入";
     setTimeout(() => (success.value = null), 3000);
+    applyTheme(s.theme);
+    applyFontSize(s.font_size);
   } catch (e) {
     error.value = String(e);
   }
@@ -304,6 +393,53 @@ function clearBackgroundImage() {
       <!-- Appearance -->
       <SLCard title="外观" subtitle="自定义软件背景和视觉效果">
         <div class="settings-group">
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">主题模式</span>
+              <span class="setting-desc">选择应用的主题外观，"跟随系统"会自动匹配系统的深色/浅色模式</span>
+            </div>
+            <div class="input-lg">
+              <SLSelect
+                v-model="settings.theme"
+                :options="themeOptions"
+                @update:modelValue="handleThemeChange"
+              />
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">文本大小</span>
+              <span class="setting-desc">调整界面文本的大小</span>
+            </div>
+            <div class="slider-control">
+              <input
+                type="range"
+                min="12"
+                max="24"
+                step="1"
+                v-model="uiFontSize"
+                @input="handleFontSizeChange"
+                class="sl-slider"
+              />
+              <span class="slider-value">{{ uiFontSize }}px</span>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">亚克力效果 (毛玻璃)</span>
+              <span class="setting-desc">
+                {{ acrylicSupported ? '启用 Windows 系统级亚克力毛玻璃效果，与背景图片兼容' : '当前系统不支持亚克力效果' }}
+              </span>
+            </div>
+            <SLSwitch
+              v-model="settings.acrylic_enabled"
+              :disabled="!acrylicSupported"
+              @update:modelValue="handleAcrylicChange"
+            />
+          </div>
+
           <div class="setting-row full-width">
             <div class="setting-info">
               <span class="setting-label">背景图片</span>
