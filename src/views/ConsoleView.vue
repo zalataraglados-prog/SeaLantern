@@ -60,7 +60,7 @@ const filteredSuggestions = computed(() => {
 });
 
 const serverId = computed(() =>
-  (route.params.id as string) || consoleStore.activeServerId || serverStore.currentServerId || ""
+  consoleStore.activeServerId || serverStore.currentServerId || (route.params.id as string) || ""
 );
 
 const currentLogs = computed(() => consoleStore.logs[serverId.value] || []);

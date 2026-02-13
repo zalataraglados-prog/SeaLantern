@@ -100,7 +100,7 @@ impl ServerManager {
             max_memory: req.max_memory,
             min_memory: req.min_memory,
             jvm_args: Vec::new(),
-            port: 25565,
+            port: req.port,
             created_at: now,
             last_started_at: None,
         };
@@ -163,7 +163,7 @@ impl ServerManager {
             max_memory: req.max_memory,
             min_memory: req.min_memory,
             jvm_args: Vec::new(),
-            port: 25565,
+            port: req.port,
             created_at: now,
             last_started_at: None,
         };

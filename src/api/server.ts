@@ -37,6 +37,7 @@ export const serverApi = {
     javaPath: string;
     maxMemory: number;
     minMemory: number;
+    port: number;
   }): Promise<ServerInstance> {
     return tauriInvoke("import_server", {
       name: params.name,
@@ -44,6 +45,7 @@ export const serverApi = {
       javaPath: params.javaPath,
       maxMemory: params.maxMemory,
       minMemory: params.minMemory,
+      port: params.port,
     });
   },
 
@@ -53,6 +55,7 @@ export const serverApi = {
     javaPath: string;
     maxMemory: number;
     minMemory: number;
+    port: number;
   }): Promise<ServerInstance> {
     return tauriInvoke("import_modpack", {
       name: params.name,
@@ -60,6 +63,7 @@ export const serverApi = {
       javaPath: params.javaPath,
       maxMemory: params.maxMemory,
       minMemory: params.minMemory,
+      port: params.port,
     });
   },
 

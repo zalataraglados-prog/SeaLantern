@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::services::java_detector::JavaInfo;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
@@ -48,18 +48,58 @@ pub struct AppSettings {
 
     #[serde(default = "default_bg_size")]
     pub background_size: String,
+
+    // 窗口状态
+    #[serde(default = "default_window_width")]
+    pub window_width: u32,
+    #[serde(default = "default_window_height")]
+    pub window_height: u32,
+    #[serde(default)]
+    pub window_x: Option<i32>,
+    #[serde(default)]
+    pub window_y: Option<i32>,
+    #[serde(default)]
+    pub window_maximized: bool,
 }
 
-fn default_true() -> bool { true }
-fn default_max_memory() -> u32 { 2048 }
-fn default_min_memory() -> u32 { 512 }
-fn default_port() -> u16 { 25565 }
-fn default_console_font() -> u32 { 13 }
-fn default_log_lines() -> u32 { 5000 }
-fn default_bg_opacity() -> f32 { 0.3 }
-fn default_bg_blur() -> u32 { 0 }
-fn default_bg_brightness() -> f32 { 1.0 }
-fn default_bg_size() -> String { "cover".to_string() }
+fn default_true() -> bool {
+    true
+}
+fn default_max_memory() -> u32 {
+    2048
+}
+fn default_min_memory() -> u32 {
+    512
+}
+fn default_port() -> u16 {
+    25565
+}
+fn default_console_font() -> u32 {
+    13
+}
+fn default_log_lines() -> u32 {
+    5000
+}
+fn default_bg_opacity() -> f32 {
+    0.3
+}
+fn default_bg_blur() -> u32 {
+    0
+}
+fn default_bg_brightness() -> f32 {
+    1.0
+}
+fn default_bg_size() -> String {
+    "cover".to_string()
+}
+
+fn default_window_width() -> u32 {
+    1200
+}
+
+fn default_window_height() -> u32 {
+    720
+}
 
 impl Default for AppSettings {
     fn default() -> Self {
@@ -79,6 +119,11 @@ impl Default for AppSettings {
             background_blur: 0,
             background_brightness: 1.0,
             background_size: "cover".to_string(),
+            window_width: 1200,
+            window_height: 720,
+            window_x: None,
+            window_y: None,
+            window_maximized: false,
         }
     }
 }

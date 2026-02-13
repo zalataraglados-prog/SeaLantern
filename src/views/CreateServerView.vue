@@ -17,6 +17,7 @@ const store = useServerStore();
 const serverName = ref("My Server");
 const maxMemory = ref("2048");
 const minMemory = ref("512");
+const port = ref("25565");
 const jarPath = ref("");
 const selectedJava = ref("");
 
@@ -36,6 +37,7 @@ async function loadDefaultSettings() {
     // Load default values from settings
     maxMemory.value = String(settings.default_max_memory);
     minMemory.value = String(settings.default_min_memory);
+    port.value = String(settings.default_port);
 
     // Load cached Java list
     if (settings.cached_java_list && settings.cached_java_list.length > 0) {
@@ -115,6 +117,7 @@ async function handleCreate() {
       javaPath: selectedJava.value,
       maxMemory: parseInt(maxMemory.value) || 2048,
       minMemory: parseInt(minMemory.value) || 512,
+      port: parseInt(port.value) || 25565,
     });
     await store.refreshList();
     router.push("/");
@@ -200,6 +203,7 @@ function getJavaLabel(java: JavaInfo): string {
         </div>
         <SLInput label="最大内存 (MB)" type="number" v-model="maxMemory" />
         <SLInput label="最小内存 (MB)" type="number" v-model="minMemory" />
+        <SLInput label="服务器端口" type="number" v-model="port" placeholder="默认 25565" />
       </div>
     </SLCard>
 

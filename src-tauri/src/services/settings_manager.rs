@@ -33,6 +33,23 @@ impl SettingsManager {
         save_settings(&self.data_dir, &default)?;
         Ok(default)
     }
+
+    pub fn update_window_state(
+        &self,
+        width: u32,
+        height: u32,
+        x: Option<i32>,
+        y: Option<i32>,
+        maximized: bool,
+    ) -> Result<(), String> {
+        let mut settings = self.settings.lock().unwrap();
+        settings.window_width = width;
+        settings.window_height = height;
+        settings.window_x = x;
+        settings.window_y = y;
+        settings.window_maximized = maximized;
+        save_settings(&self.data_dir, &settings)
+    }
 }
 
 fn get_data_dir() -> String {
@@ -68,6 +85,5 @@ fn save_settings(data_dir: &str, settings: &AppSettings) -> Result<(), String> {
     let path = std::path::Path::new(data_dir).join(SETTINGS_FILE);
     let json = serde_json::to_string_pretty(settings)
         .map_err(|e| format!("Failed to serialize settings: {}", e))?;
-    std::fs::write(&path, json)
-        .map_err(|e| format!("Failed to save settings: {}", e))
+    std::fs::write(&path, json).map_err(|e| format!("Failed to save settings: {}", e))
 }

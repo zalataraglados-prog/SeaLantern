@@ -30,8 +30,9 @@ pub fn import_server(
     java_path: String,
     max_memory: u32,
     min_memory: u32,
+    port: u16,
 ) -> Result<ServerInstance, String> {
-    let req = ImportServerRequest { name, jar_path, java_path, max_memory, min_memory };
+    let req = ImportServerRequest { name, jar_path, java_path, max_memory, min_memory, port };
     manager().import_server(req)
 }
 
@@ -42,8 +43,9 @@ pub fn import_modpack(
     java_path: String,
     max_memory: u32,
     min_memory: u32,
+    port: u16,
 ) -> Result<ServerInstance, String> {
-    let req = ImportModpackRequest { name, modpack_path, java_path, max_memory, min_memory };
+    let req = ImportModpackRequest { name, modpack_path, java_path, max_memory, min_memory, port };
     manager().import_modpack(req)
 }
 
