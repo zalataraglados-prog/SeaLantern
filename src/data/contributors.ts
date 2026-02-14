@@ -67,6 +67,11 @@ export const contributors: Contributor[] = [
     avatar: "https://minotar.net/avatar/HKYZYH/64",
     url: "https://gitee.com/HKYZYHgezi",
   },
+  {
+    name: "清初Lucky",
+    role: "喵喵喵~",
+    avatar: "https://minotar.net/avatar/qingchu2010/64",
+  },
 
   
   // ============================================

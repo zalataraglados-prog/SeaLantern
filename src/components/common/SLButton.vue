@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Props {
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "success";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
   loading?: boolean;
@@ -123,12 +123,17 @@ withDefaults(defineProps<Props>(), {
   transform: translateY(-1px);
 }
 
-.sl-button--danger:active:not(:disabled) {
-  transform: translateY(0);
+.sl-button--success {
+  background: var(--sl-success);
+  color: var(--sl-text-inverse);
 }
 
-.sl-button--disabled,
-.sl-button[disabled] {
+.sl-button--success:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.sl-button--disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
