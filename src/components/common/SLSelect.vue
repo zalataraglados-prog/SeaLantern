@@ -70,6 +70,16 @@ const updateDropdownPosition = () => {
   };
 };
 
+const startPositionTracking = () => {
+  window.addEventListener("resize", updateDropdownPosition);
+  window.addEventListener("scroll", updateDropdownPosition, true);
+};
+
+const stopPositionTracking = () => {
+  window.removeEventListener("resize", updateDropdownPosition);
+  window.removeEventListener("scroll", updateDropdownPosition, true);
+};
+
 const toggleDropdown = () => {
   if (props.disabled) return;
 
@@ -78,7 +88,6 @@ const toggleDropdown = () => {
     searchQuery.value = "";
     highlightedIndex.value = -1;
     nextTick(() => {
-      updateDropdownPosition();
       if (props.searchable) {
         inputRef.value?.focus();
       }
@@ -159,13 +168,24 @@ const stopWatch = watch(searchQuery, () => {
   highlightedIndex.value = filteredOptions.value.length > 0 ? 0 : -1;
 });
 
+const stopOpenWatch = watch(isOpen, (open) => {
+  if (open) {
+    updateDropdownPosition();
+    startPositionTracking();
+    return;
+  }
+  stopPositionTracking();
+});
+
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
 });
 
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside);
+  stopPositionTracking();
   stopWatch();
+  stopOpenWatch();
 
   containerRef.value = null;
   dropdownRef.value = null;
