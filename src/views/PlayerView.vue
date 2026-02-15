@@ -109,19 +109,24 @@ function parseOnlinePlayers() {
 
   for (const line of logs) {
     const joinMatch = line.match(/\]: (\w+) joined the game/);
-    const loginMatch = line.match(/\]: UUID of player (\w+) is/);
     const leftMatch = line.match(/\]: (\w+) left the game/);
+    const lostConnectionMatch = line.match(/\]: (\w+)(?: \([^)]+\))? lost connection:/);
+    const disconnectingMatch = line.match(/\]: Disconnecting (\w+)(?: \([^)]+\))?:/);
 
     if (joinMatch) {
       const name = joinMatch[1];
       players.add(name);
     }
-    if (loginMatch) {
-      const name = loginMatch[1];
-      players.add(name);
-    }
     if (leftMatch) {
       const name = leftMatch[1];
+      players.delete(name);
+    }
+    if (lostConnectionMatch) {
+      const name = lostConnectionMatch[1];
+      players.delete(name);
+    }
+    if (disconnectingMatch) {
+      const name = disconnectingMatch[1];
       players.delete(name);
     }
   }
