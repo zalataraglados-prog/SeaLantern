@@ -161,7 +161,9 @@ pub fn run() {
                             // "ask" 或其他值：显示对话框询问
                             let window = window.clone();
                             tauri::async_runtime::spawn(async move {
-                                use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+                                use tauri_plugin_dialog::{
+                                    DialogExt, MessageDialogButtons, MessageDialogKind,
+                                };
 
                                 let answer = window
                                     .dialog()
