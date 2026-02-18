@@ -65,11 +65,14 @@ const handleInput = (e: Event) => {
   align-items: center;
   background: var(--sl-surface, #fff);
   border: 1px solid var(--sl-border, #ddd);
-  border-radius: 6px;
+  border-radius: var(--sl-radius-sm);
   transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color var(--sl-transition-fast),
+    box-shadow var(--sl-transition-fast);
   overflow: hidden;
+  will-change: border-color, box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .sl-input-container:focus-within {
