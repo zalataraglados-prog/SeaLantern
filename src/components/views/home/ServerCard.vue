@@ -42,21 +42,22 @@ const settingsStore = useSettingsStore();
 const router = useRouter();
 const MAP_WEB_URL = "http://127.0.0.1:8156";
 
-const showMapButton = computed(() => settingsStore.settings.home_map_button_enabled === true);
+const mapFeatureEnabled = computed(() => settingsStore.settings.home_map_button_enabled === true);
 
 const serverCardBackgroundStyle = computed(() => {
+  if (!mapFeatureEnabled.value) {
+    return {};
+  }
+
   const basePath = props.server.path.replace(/\\/g, "/");
-  const tiles = [
-    `${basePath}/plugins/Sealantermap/maps/tiles/overview-q16/s256/x0_y0.png`,
-    `${basePath}/plugins/Sealantermap/maps/tiles/overview-q3/s256/x0_y0.png`,
-    `${basePath}/plugins/Sealantermap/maps/tiles/overview-q2/s256/x0_y0.png`,
-    `${basePath}/plugins/Sealantermap/maps/tiles/overview-q1/s256/x0_y0.png`,
-  ];
-  const tileLayers = tiles.map((p) => `url("${convertFileSrc(p)}")`).join(", ");
+  // Spawn-area preview tile (x0_y0), zoomed to avoid visible tile edge/white border.
+  const spawnTile = `${basePath}/plugins/Sealantermap/maps/tiles/overview-q16/s256/x0_y0.png`;
   return {
-    backgroundImage: `linear-gradient(135deg, rgba(8, 14, 24, 0.74), rgba(8, 14, 24, 0.56)), ${tileLayers}`,
-    backgroundSize: "cover, 150%, 150%, 150%, 150%",
-    backgroundPosition: "center, 50% 50%, 64% 36%, 36% 64%, 72% 68%",
+    backgroundImage: `linear-gradient(135deg, rgba(8, 14, 24, 0.74), rgba(8, 14, 24, 0.56)), url("${convertFileSrc(
+      spawnTile,
+    )}")`,
+    backgroundSize: "cover, 180%",
+    backgroundPosition: "center, center",
     backgroundRepeat: "no-repeat",
   };
 });
@@ -174,7 +175,7 @@ function handleMap() {
       <SLButton variant="ghost" size="sm" @click="handleConsole">
         {{ i18n.t("common.console") }}
       </SLButton>
-      <SLButton v-if="showMapButton" variant="ghost" size="sm" @click="handleMap">
+      <SLButton v-if="mapFeatureEnabled" variant="ghost" size="sm" @click="handleMap">
         {{ i18n.t("common.map") }}
       </SLButton>
       <SLButton variant="ghost" size="sm" @click="handleConfig">
