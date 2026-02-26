@@ -12,6 +12,7 @@ export type SettingsGroup =
 export interface AppSettings {
   close_servers_on_exit: boolean;
   auto_accept_eula: boolean;
+  home_map_button_enabled: boolean;
   default_max_memory: number;
   default_min_memory: number;
   default_port: number;
@@ -45,6 +46,7 @@ export interface AppSettings {
 export interface PartialSettings {
   close_servers_on_exit?: boolean;
   auto_accept_eula?: boolean;
+  home_map_button_enabled?: boolean;
   default_max_memory?: number;
   default_min_memory?: number;
   default_port?: number;

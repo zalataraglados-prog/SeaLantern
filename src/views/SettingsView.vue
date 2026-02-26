@@ -146,6 +146,7 @@ async function saveSettings() {
   settings.value.max_log_lines = parseInt(logLines.value) || 5000;
   settings.value.color = settings.value.color || "default";
   settings.value.developer_mode = settings.value.developer_mode || false;
+  settings.value.home_map_button_enabled = !!settings.value.home_map_button_enabled;
 
   clearError();
   try {
@@ -261,6 +262,7 @@ function handleJavaInstalled(path: string) {
       <GeneralSettingsCard
         v-model:closeServersOnExit="settings.close_servers_on_exit"
         v-model:autoAcceptEula="settings.auto_accept_eula"
+        v-model:homeMapButtonEnabled="settings.home_map_button_enabled"
         v-model:closeAction="settings.close_action"
         @change="markChanged"
       />

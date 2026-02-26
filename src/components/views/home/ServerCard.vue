@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { Pencil, FolderOpen, Check, X } from "lucide-vue-next";
 import SLBadge from "@components/common/SLBadge.vue";
 import SLButton from "@components/common/SLButton.vue";
@@ -6,6 +7,7 @@ import type { ServerInstance } from "@type/server";
 import { i18n } from "@language";
 import { systemApi } from "@api/system";
 import { useRouter } from "vue-router";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import {
   actionLoading,
   editingServerId,
@@ -29,13 +31,35 @@ import {
   handleAnimationEnd,
 } from "@utils/serverUtils";
 import { useServerStore } from "@stores/serverStore";
+import { useSettingsStore } from "@stores/settingsStore";
 
 const props = defineProps<{
   server: ServerInstance;
 }>();
 
 const store = useServerStore();
+const settingsStore = useSettingsStore();
 const router = useRouter();
+const MAP_WEB_URL = "http://127.0.0.1:8156";
+
+const showMapButton = computed(() => settingsStore.settings.home_map_button_enabled === true);
+
+const serverCardBackgroundStyle = computed(() => {
+  const basePath = props.server.path.replace(/\\/g, "/");
+  const tiles = [
+    `${basePath}/plugins/Sealantermap/maps/tiles/overview-q16/s256/x0_y0.png`,
+    `${basePath}/plugins/Sealantermap/maps/tiles/overview-q3/s256/x0_y0.png`,
+    `${basePath}/plugins/Sealantermap/maps/tiles/overview-q2/s256/x0_y0.png`,
+    `${basePath}/plugins/Sealantermap/maps/tiles/overview-q1/s256/x0_y0.png`,
+  ];
+  const tileLayers = tiles.map((p) => `url("${convertFileSrc(p)}")`).join(", ");
+  return {
+    backgroundImage: `linear-gradient(135deg, rgba(8, 14, 24, 0.74), rgba(8, 14, 24, 0.56)), ${tileLayers}`,
+    backgroundSize: "cover, 150%, 150%, 150%, 150%",
+    backgroundPosition: "center, 50% 50%, 64% 36%, 36% 64%, 72% 68%",
+    backgroundRepeat: "no-repeat",
+  };
+});
 
 async function handlePathClick(path: string) {
   try {
@@ -54,10 +78,15 @@ function handleConfig() {
   store.setCurrentServer(props.server.id);
   router.push("/config/" + props.server.id);
 }
+
+function handleMap() {
+  const url = `${MAP_WEB_URL}/?server=${encodeURIComponent(props.server.id)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
 </script>
 
 <template>
-  <div class="server-card glass-card">
+  <div class="server-card glass-card" :style="serverCardBackgroundStyle">
     <div class="server-card-header">
       <div class="server-info">
         <div class="server-name-container">
@@ -145,6 +174,9 @@ function handleConfig() {
       <SLButton variant="ghost" size="sm" @click="handleConsole">
         {{ i18n.t("common.console") }}
       </SLButton>
+      <SLButton v-if="showMapButton" variant="ghost" size="sm" @click="handleMap">
+        {{ i18n.t("common.map") }}
+      </SLButton>
       <SLButton variant="ghost" size="sm" @click="handleConfig">
         {{ i18n.t("common.config_edit") }}
       </SLButton>
@@ -199,8 +231,25 @@ function handleConfig() {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  background: var(--sl-bg-secondary);
+  background-color: var(--sl-bg-secondary);
+  background-origin: border-box;
+  background-clip: border-box;
   box-shadow: var(--sl-shadow-sm);
+  border: 1px solid color-mix(in srgb, var(--sl-border) 72%, transparent);
+}
+
+.server-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.server-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(3, 8, 14, 0.08), rgba(3, 8, 14, 0.2));
+  pointer-events: none;
+  z-index: 0;
 }
 
 .server-card:hover {
@@ -220,6 +269,7 @@ function handleConfig() {
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease;
+  z-index: 2;
 }
 
 .server-card:hover::before {

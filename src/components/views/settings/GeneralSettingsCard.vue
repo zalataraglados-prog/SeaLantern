@@ -7,6 +7,7 @@ import { i18n } from "@language";
 const props = defineProps<{
   closeServersOnExit: boolean;
   autoAcceptEula: boolean;
+  homeMapButtonEnabled: boolean;
   closeAction: "ask" | "minimize" | "close";
 }>();
 
@@ -15,6 +16,7 @@ type CloseAction = "ask" | "minimize" | "close";
 const emit = defineEmits<{
   (e: "update:closeServersOnExit", value: boolean): void;
   (e: "update:autoAcceptEula", value: boolean): void;
+  (e: "update:homeMapButtonEnabled", value: boolean): void;
   (e: "update:closeAction", value: CloseAction): void;
   (e: "change"): void;
 }>();
@@ -60,6 +62,22 @@ const closeActionOptions = [
           @update:model-value="
             (v) => {
               emit('update:autoAcceptEula', v);
+              emit('change');
+            }
+          "
+        />
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <span class="setting-label">{{ i18n.t("settings.home_map_button") }}</span>
+          <span class="setting-desc">{{ i18n.t("settings.home_map_button_desc") }}</span>
+        </div>
+        <SLSwitch
+          :model-value="homeMapButtonEnabled"
+          @update:model-value="
+            (v) => {
+              emit('update:homeMapButtonEnabled', v);
               emit('change');
             }
           "

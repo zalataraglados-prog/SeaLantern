@@ -19,6 +19,9 @@ pub struct AppSettings {
     #[serde(default = "default_true")]
     pub auto_accept_eula: bool,
 
+    #[serde(default = "default_false")]
+    pub home_map_button_enabled: bool,
+
     #[serde(default = "default_max_memory")]
     pub default_max_memory: u32,
 
@@ -175,6 +178,7 @@ impl AppSettings {
 
         if self.close_servers_on_exit != other.close_servers_on_exit
             || self.auto_accept_eula != other.auto_accept_eula
+            || self.home_map_button_enabled != other.home_map_button_enabled
             || self.close_action != other.close_action
         {
             changed.push(SettingsGroup::General);
@@ -232,6 +236,9 @@ impl AppSettings {
         }
         if let Some(v) = partial.auto_accept_eula {
             self.auto_accept_eula = v;
+        }
+        if let Some(v) = partial.home_map_button_enabled {
+            self.home_map_button_enabled = v;
         }
         if let Some(v) = partial.default_max_memory {
             self.default_max_memory = v;
@@ -324,6 +331,8 @@ pub struct PartialSettings {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub auto_accept_eula: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub home_map_button_enabled: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub default_max_memory: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default_min_memory: Option<u32>,
@@ -384,6 +393,7 @@ impl Default for AppSettings {
         AppSettings {
             close_servers_on_exit: true,
             auto_accept_eula: true,
+            home_map_button_enabled: false,
             default_max_memory: 2048,
             default_min_memory: 512,
             default_port: 25565,

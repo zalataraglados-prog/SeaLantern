@@ -47,6 +47,7 @@ export function getInitialFontSize(): number {
 const defaultSettings: AppSettings = {
   close_servers_on_exit: true,
   auto_accept_eula: false,
+  home_map_button_enabled: false,
   default_max_memory: 4096,
   default_min_memory: 1024,
   default_port: 25565,
